@@ -35,8 +35,8 @@ npm run dev
 ```
 
 This single command starts:
-- **Frontend**: React app on http://localhost:3000
-- **Backend**: Express API on http://localhost:5000
+- **Frontend**: React app on http://localhost:6000
+- **Backend**: Express API on http://localhost:6001
 
 ## Project Structure
 
