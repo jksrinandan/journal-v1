@@ -1,6 +1,6 @@
 # Journal App
 
-A full-stack application with React frontend and Express/MySQL backend.
+A full-stack application with React frontend and Express/SQLite backend.
 
 ## Quick Start
 
@@ -10,25 +10,7 @@ A full-stack application with React frontend and Express/MySQL backend.
 npm run install:all
 ```
 
-### 2. Set Up MySQL Database
-
-Create the database and tables:
-
-```bash
-mysql -u root -p < server/schema.sql
-```
-
-### 3. Configure Environment
-
-Copy the example env file and update with your MySQL credentials:
-
-```bash
-cp server/.env.example server/.env
-```
-
-Edit `server/.env` with your database credentials.
-
-### 4. Start Both Frontend and Backend
+### 2. Start Both Frontend and Backend
 
 ```bash
 npm run dev
@@ -37,6 +19,8 @@ npm run dev
 This single command starts:
 - **Frontend**: React app on http://localhost:6000
 - **Backend**: Express API on http://localhost:6001
+
+The SQLite database (`journal.db`) is created automatically on first run.
 
 ## Project Structure
 
@@ -51,7 +35,6 @@ journal-v1/
 │   └── vite.config.js
 ├── server/          # Express backend
 │   ├── index.js
-│   ├── schema.sql
 │   └── .env.example
 └── package.json     # Root package with concurrent scripts
 ```

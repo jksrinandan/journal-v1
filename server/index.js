@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import mysql from 'mysql2/promise'
+import Database from 'better-sqlite3'
 
 dotenv.config()
 
@@ -12,46 +12,47 @@ const PORT = process.env.PORT || 6001
 app.use(cors())
 app.use(express.json())
 
-// Database connection pool
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'journal_db',
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
-})
+// Database setup
+const db = new Database('journal.db')
+
+// Initialize database schema
+db.exec(`
+  CREATE TABLE IF NOT EXISTS entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`)
 
 // Health check endpoint
-app.get('/api/health', async (req, res) => {
+app.get('/api/health', (req, res) => {
   try {
-    const connection = await pool.getConnection()
-    connection.release()
+    db.prepare('SELECT 1').get()
     res.json({ message: 'Server is running and database is connected!' })
   } catch (error) {
     res.json({ message: 'Server is running but database is not connected' })
   }
 })
 
-// Example API endpoint
-app.get('/api/entries', async (req, res) => {
+// Get all entries
+app.get('/api/entries', (req, res) => {
   try {
-    const [rows] = await pool.query('SELECT * FROM entries ORDER BY created_at DESC')
+    const rows = db.prepare('SELECT * FROM entries ORDER BY created_at DESC').all()
     res.json(rows)
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
 })
 
-app.post('/api/entries', async (req, res) => {
+// Create new entry
+app.post('/api/entries', (req, res) => {
   const { title, content } = req.body
   try {
-    const [result] = await pool.query(
-      'INSERT INTO entries (title, content) VALUES (?, ?)',
-      [title, content]
-    )
-    res.json({ id: result.insertId, title, content })
+    const stmt = db.prepare('INSERT INTO entries (title, content) VALUES (?, ?)')
+    const result = stmt.run(title, content)
+    res.json({ id: result.lastInsertRowid, title, content })
   } catch (error) {
     res.status(500).json({ error: error.message })
   }
